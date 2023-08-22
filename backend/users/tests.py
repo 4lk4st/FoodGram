@@ -8,7 +8,7 @@ class AccountTests(APITestCase):
         """
         Ensure we can create a new account object.
         """
-        url = reverse('api-users')
+        url = 'http://127.0.0.1:8000/api/users/'
         data = {
             'email': 'test@test.com',
             'username': 'testname',
