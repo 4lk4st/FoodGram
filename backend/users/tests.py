@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.contrib.auth.hashers import check_password
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from rest_framework.test import APIClient, APITestCase
+from rest_framework.test import APITestCase
 
 
 from .models import FoodUser
