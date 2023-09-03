@@ -1,18 +1,14 @@
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework import routers
+from django.conf import settings
+from django.conf.urls.static import static
 
-from recipes.views import TagViewSet, IngredientViewSet
-from users.views import TokenCreateView
-
-router = routers.DefaultRouter()
-router.register(r'api/tags', TagViewSet)
-router.register(r'api/ingredients', IngredientViewSet)
 
 urlpatterns = [
-    path('', include(router.urls)),
-    path('api/auth/token/login/', TokenCreateView.as_view(), name="login"),
-    path('api/auth/', include('djoser.urls.authtoken')),
-    path('api/', include('djoser.urls')),
+    path('', include('recipes.urls')),
+    path('', include('users.urls')),
     path('admin/', admin.site.urls),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

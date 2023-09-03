@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from djoser import utils
 from djoser.conf import settings
 
+from users.paginators import FoodPageLimitPaginator
 
 class TokenCreateView(utils.ActionViewMixin, generics.GenericAPIView):
     """
@@ -11,6 +12,7 @@ class TokenCreateView(utils.ActionViewMixin, generics.GenericAPIView):
 
     serializer_class = settings.SERIALIZERS.token_create
     permission_classes = settings.PERMISSIONS.token_create
+    pagination_class = FoodPageLimitPaginator
 
     def _action(self, serializer):
         token = utils.login_user(self.request, serializer.user)

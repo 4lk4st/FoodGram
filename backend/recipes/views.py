@@ -1,7 +1,11 @@
 from rest_framework import viewsets, permissions, filters
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import Tag, Ingredient
-from .serializers import TagSerializer, IngredientSerializer
+from users.models import FoodUser
+from users.paginators import FoodPageLimitPaginator
+from .models import Tag, Ingredient, Recipe
+from .serializers import TagSerializer, IngredientSerializer, RecipeReadSerializer, RecipeWriteSerializer
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -11,7 +15,6 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [permissions.AllowAny]
-    pagination_class = None
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
@@ -22,4 +25,34 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
     filter_backends = (filters.SearchFilter, )
     search_fields = ('name', )
-    pagination_class = None
+
+
+class RecipeViewSet(viewsets.ModelViewSet):
+    """
+    API эндпоинт для get, post, get_id, patch, del запросов по рецептам.
+    """
+    queryset = Recipe.objects.all()
+    permission_classes = [permissions.AllowAny]
+    pagination_class = FoodPageLimitPaginator
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('author', 'tags__slug')
+
+    def perform_create(self, serializer):
+        author = get_object_or_404(FoodUser, id=self.request.user.id)
+        serializer.save(author=author)
+    
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return RecipeReadSerializer
+        return RecipeWriteSerializer
+    
+    #для отладки
+    def dispatch(self, request, *args, **kwargs):
+        result = super().dispatch(request, *args, **kwargs)
+        return result
+
+    def get_queryset(self):
+        recipes = Recipe.objects.prefetch_related(
+            'recipe_ingredient__ingredient', 'tags'
+        ).all()
+        return recipes
