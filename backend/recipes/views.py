@@ -1,6 +1,5 @@
 from rest_framework import viewsets, permissions, filters
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
 
 from users.models import FoodUser
 from users.paginators import FoodPageLimitPaginator
@@ -34,8 +33,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     permission_classes = [permissions.AllowAny]
     pagination_class = FoodPageLimitPaginator
-    filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('author', 'tags__slug')
 
     def perform_create(self, serializer):
         author = get_object_or_404(FoodUser, id=self.request.user.id)
@@ -46,13 +43,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeReadSerializer
         return RecipeWriteSerializer
     
-    #для отладки
-    def dispatch(self, request, *args, **kwargs):
-        result = super().dispatch(request, *args, **kwargs)
-        return result
-
     def get_queryset(self):
-        recipes = Recipe.objects.prefetch_related(
+        queryset = Recipe.objects.prefetch_related(
             'recipe_ingredient__ingredient', 'tags'
         ).all()
-        return recipes
+
+        tags = self.request.query_params.getlist('tags')
+        if tags:
+            queryset = queryset.filter(tags__slug__in=tags)
+
+        author = self.request.query_params.get('author')
+        if author:
+            queryset = queryset.filter(author=author)
+
+        return queryset
