@@ -100,22 +100,27 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         instance.text = validated_data.get('text', instance.text)
         instance.cooking_time = validated_data.get('cooking_time',
                                                    instance.cooking_time)
+        
         if 'tags' in validated_data:
             tags_data = validated_data.pop('tags')
+            instance.tags.set([])
+
             lst = []
             for tag in tags_data:
-                current_tag, status = Tag.objects.get_or_create(**tag)
-                lst.append(current_tag)
+                # current_tag, status = Tag.objects.get_or_create(id=tag)
+                lst.append(tag)
             instance.tags.set(lst)
+              
         
         if 'ingredients' in validated_data:
-            ingrediets_data = validated_data.pop('ingredients')
-            lst = []
-            for ingredient in ingrediets_data:
-                current_ingredient, status = Ingredient.objects.get_or_create(
-                    **ingredient)
-                lst.append(current_ingredient)
-            instance.ingredients.set(lst)
+            ing_amount = validated_data.pop('ingredients')
+            instance.ingredients.set([])
+
+            for ing in ing_amount:      
+                IngredientRecipe.objects.create(
+                    ingredient=Ingredient.objects.get(pk=ing['ingredient'].id),
+                    recipe=instance,
+                    amount=ing['amount'])
 
         instance.save()
         return instance
