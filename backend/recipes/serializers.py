@@ -107,7 +107,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
             lst = []
             for tag in tags_data:
-                # current_tag, status = Tag.objects.get_or_create(id=tag)
                 lst.append(tag)
             instance.tags.set(lst)
               

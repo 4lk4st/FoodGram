@@ -42,3 +42,22 @@ class FoodUser(AbstractUser):
 
     def __str__(self):
         return self.email
+    
+
+class Subscription(models.Model):
+    user = models.ForeignKey(
+        FoodUser,
+        on_delete=models.CASCADE,
+        related_name='subscriber'
+    )
+    subscription = models.ForeignKey(
+        FoodUser,
+        on_delete=models.CASCADE,
+        related_name='subscription'
+    )
+
+    class Meta:
+        ordering = ['-user']
+
+    def __str__(self):
+        return f'{self.user} ->>> {self.subscription}'

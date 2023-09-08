@@ -14,6 +14,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [permissions.AllowAny]
+    pagination_class = None
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
@@ -24,6 +25,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
     filter_backends = (filters.SearchFilter, )
     search_fields = ('name', )
+    pagination_class = None
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -32,7 +34,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     """
     queryset = Recipe.objects.all()
     permission_classes = [permissions.AllowAny]
-    pagination_class = FoodPageLimitPaginator
 
     def perform_create(self, serializer):
         author = get_object_or_404(FoodUser, id=self.request.user.id)
