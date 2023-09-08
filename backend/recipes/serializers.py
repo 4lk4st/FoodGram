@@ -129,7 +129,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     """
     Сериализатор для чтения записей модели Recipe
     """
-    image = Base64ImageField(required=True, allow_null=True)
+    image = Base64ImageField()
     tags = TagSerializer(read_only=True, many=True)
     ingredients = serializers.SerializerMethodField()
 
