@@ -28,10 +28,9 @@ class Ingredient(models.Model):
 
 
 class Recipe(models.Model):
-    author = models.ForeignKey(
-        FoodUser,
-        on_delete=models.CASCADE,
-        related_name='recipes')
+    author = models.ForeignKey(FoodUser,
+                               on_delete=models.CASCADE,
+                               related_name='recipes')
     ingredients = models.ManyToManyField(Ingredient,
                                          through='IngredientRecipe')
     tags = models.ManyToManyField(Tag)
@@ -58,3 +57,15 @@ class IngredientRecipe(models.Model):
 
     def __str__(self) -> str:
         return f'{self.ingredient} {self.recipe}'
+
+
+class FavoriteRecipe(models.Model):
+    user = models.ForeignKey(FoodUser,
+                             on_delete=models.CASCADE,
+                             related_name='favorite_recipes')
+
+    recipe = models.ForeignKey(Recipe,
+                               on_delete=models.CASCADE)
+
+    def __str__(self) -> str:
+        return f'{self.user} {self.recipe}'

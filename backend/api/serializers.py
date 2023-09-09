@@ -3,8 +3,8 @@ from rest_framework import serializers
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
 
-from .models import Tag, Ingredient, Recipe, IngredientRecipe
-from users.serializers import FoodUserSerializer
+from users.models import FoodUser, Subscription
+from recipes.models import Tag, Ingredient, Recipe, IngredientRecipe
 
 
 class Base64ImageField(serializers.ImageField):
@@ -19,6 +19,22 @@ class Base64ImageField(serializers.ImageField):
         
         return super().to_internal_value(data)
 
+
+class FoodUserSerializer(serializers.ModelSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+
+    class Meta:
+        model = FoodUser
+        fields = ('email', 'id', 'username', 'first_name', 'last_name', 'is_subscribed')
+
+    def get_is_subscribed(self, obj):
+        if not self.context['request'].user.is_anonymous:
+            return Subscription.objects.filter(
+                user = self.context['request'].user,
+                subscription = obj
+            ).exists()
+        return False
+    
 
 class IngredientSerializer(serializers.ModelSerializer):
     """
@@ -146,3 +162,49 @@ class RecipeReadSerializer(serializers.ModelSerializer):
             instance=obj.recipe_ingredient.all(),
             many=True
         ).data
+
+
+class ShortRecipeSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
+        read_only_fields = ("__all__",)
+
+
+class Base64ImageField(serializers.ImageField):
+    """
+    Поле для добавления картинок рецептов
+    """
+    def to_internal_value(self, data):
+        if isinstance(data, str) and data.startswith('data:image'):
+            format, imgstr = data.split(';base64,')  
+            ext = format.split('/')[-1]  
+            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+        
+        return super().to_internal_value(data)
+
+
+class SubsciptionReadSerializer(serializers.ModelSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+    recipes = ShortRecipeSerializer(many=True, read_only=True)
+    recipes_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = FoodUser
+        fields = ('email', 'id', 'username', 'first_name', 'last_name',
+                  'is_subscribed', 'recipes', 'recipes_count')
+        read_only_fields = ("__all__",)
+
+    def get_is_subscribed(self, obj):
+        return True
+    
+    def get_recipes_count(self, obj):
+        return obj.recipes.count()
+
+
+class SubsciptionWriteSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Subscription
+        fields = ('user', 'subscription')

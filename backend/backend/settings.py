@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'djoser',
     'users',
     'recipes',
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -140,14 +141,14 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'users.paginators.FoodPageLimitPaginator',
+    'DEFAULT_PAGINATION_CLASS': 'api.paginators.FoodPageLimitPaginator',
 }
 
 DJOSER = {
     'HIDE_USERS': False,
     'SERIALIZERS': {
-        'current_user': 'users.serializers.FoodUserSerializer',
-        'user': 'users.serializers.FoodUserSerializer',
+        'current_user': 'api.serializers.FoodUserSerializer',
+        'user': 'api.serializers.FoodUserSerializer',
     },
     'PERMISSIONS': {
         'user': ['rest_framework.permissions.AllowAny'],
