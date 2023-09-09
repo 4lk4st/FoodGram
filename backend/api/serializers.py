@@ -4,7 +4,7 @@ from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
 
 from users.models import FoodUser, Subscription
-from recipes.models import Tag, Ingredient, Recipe, IngredientRecipe
+from recipes.models import Tag, Ingredient, Recipe, IngredientRecipe, FavoriteRecipe
 
 
 class Base64ImageField(serializers.ImageField):
@@ -148,13 +148,14 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     tags = TagSerializer(read_only=True, many=True)
     ingredients = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField()
 
     author = FoodUserSerializer(default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Recipe
         fields = ['id', 'tags', 'author', 'ingredients',
-                  'name', 'image', 'text', 'cooking_time']
+                  'is_favorited', 'name', 'image', 'text', 'cooking_time']
         read_only_fields = ('author',)
 
     def get_ingredients(self, obj):
@@ -162,6 +163,12 @@ class RecipeReadSerializer(serializers.ModelSerializer):
             instance=obj.recipe_ingredient.all(),
             many=True
         ).data
+
+    def get_is_favorited(self, obj):
+        return FavoriteRecipe.objects.filter(
+            user=self.context['request'].user,
+            recipe=obj 
+        ).exists()
 
 
 class ShortRecipeSerializer(serializers.ModelSerializer):
