@@ -36,30 +36,37 @@ class FoodUserSerializer(serializers.ModelSerializer):
     
 
 class RecipeSubscriptionSerializer(serializers.ModelSerializer):
-    image = Base64ImageField()
     
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
+        read_only_fields = ("__all__",)
 
 
-class SubsciptionSerializer(serializers.ModelSerializer):
-    email = serializers.ReadOnlyField(source='subscription.email')
-    id = serializers.ReadOnlyField(source='subscription.id')
-    username = serializers.ReadOnlyField(source='subscription.username')
-    first_name = serializers.ReadOnlyField(source='subscription.username')
-    last_name = serializers.ReadOnlyField(source='subscription.last_name')
+class SubsciptionReadSerializer(serializers.ModelSerializer):
+    # email = serializers.ReadOnlyField(source='subscription.email')
+    # id = serializers.ReadOnlyField(source='subscription.id')
+    # username = serializers.ReadOnlyField(source='subscription.username')
+    # first_name = serializers.ReadOnlyField(source='subscription.username')
+    # last_name = serializers.ReadOnlyField(source='subscription.last_name')
     is_subscribed = serializers.SerializerMethodField()
     recipes = RecipeSubscriptionSerializer(many=True, read_only=True)
     recipes_count = serializers.SerializerMethodField()
 
     class Meta:
-        model = Subscription
+        model = FoodUser
         fields = ('email', 'id', 'username', 'first_name', 'last_name',
                   'is_subscribed', 'recipes', 'recipes_count')
+        read_only_fields = ("__all__",)
 
     def get_is_subscribed(self, obj):
         return True
     
     def get_recipes_count(self, obj):
-        return 1
+        return obj.recipes.count()
+    
+class SubsciptionWriteSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Subscription
+        fields = ('user', 'subscription')

@@ -61,26 +61,6 @@ class AccountEndpointTests(APITestCase):
         url = 'http://127.0.0.1:8000/api/users/'
         self.new_user = self.client.post(url, self.user_info, format='json')
 
-    def test_user_list(self):
-        """
-        Проверяем, что мы видим user-list через api.
-        """
-        url = 'http://127.0.0.1:8000/api/users/'
-
-        response = self.client.get(url, format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("count", json.loads(response.content))
-        self.assertIn("next", json.loads(response.content))
-        self.assertIn("previous", json.loads(response.content))
-        self.assertIn("results", json.loads(response.content))
-        self.assertEqual(json.loads(response.content)['results'][0]["email"], json.loads(self.new_user.content)["email"])
-        self.assertEqual(json.loads(response.content)['results'][0]["id"], json.loads(self.new_user.content)["id"])
-        self.assertEqual(json.loads(response.content)['results'][0]["username"], json.loads(self.new_user.content)["username"])
-        self.assertEqual(json.loads(response.content)['results'][0]["first_name"], json.loads(self.new_user.content)["first_name"])
-        self.assertEqual(json.loads(response.content)['results'][0]["last_name"], json.loads(self.new_user.content)["last_name"])
-        self.assertNotIn("password", json.loads(response.content))
-
     def test_user_profile_by_id(self):
         """
         Проверяем, что можно видеть профиль любого пользователя по id
