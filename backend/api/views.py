@@ -1,14 +1,15 @@
-
 from djoser import utils
 from djoser.conf import settings
 from djoser.views import UserViewSet
+from django.http import HttpResponse
+from django.db.models import Sum
 from rest_framework import generics, status, viewsets, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
 from users.models import FoodUser, Subscription
-from recipes.models import Tag, Ingredient, Recipe, FavoriteRecipe, ShoppingCartRecipes
+from recipes.models import Tag, Ingredient, Recipe, FavoriteRecipe, ShoppingCartRecipes, IngredientRecipe
 from api.paginators import FoodPageLimitPaginator
 
 from .serializers import (TagSerializer, IngredientSerializer, RecipeReadSerializer,
@@ -155,3 +156,22 @@ class RecipeViewSet(viewsets.ModelViewSet):
             ).delete()
             return Response({'detail': 'Рецепт успешно удален из списка покупок'},
                             status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['get'])
+    def download_shopping_cart(self, request):
+        shopping_list = ['Ваш список покупок:', '\n-------------------']
+
+        for obj in (IngredientRecipe.objects.filter(
+            recipe__recipe_in_cart__user = request.user)
+            .values('ingredient').annotate(Sum('amount'))
+            .values_list('ingredient__name',
+                         'ingredient__measurement_unit',
+                         'amount__sum')):
+            shopping_list.append(f'\n{obj[0]} ({obj[1]}) - {obj[2]}')
+        shopping_list.append('\n-------------------\nПриятных покупок!')
+        
+        return HttpResponse(
+            shopping_list,
+            headers={"Content-Type": "text/plain",
+                     "Content-Disposition": 'attachment; filename="shopping_list.txt"'}
+        )

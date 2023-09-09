@@ -77,7 +77,8 @@ class ShoppingCartRecipes(models.Model):
                              related_name='shopping_cart')
     
     recipe = models.ForeignKey(Recipe,
-                               on_delete=models.CASCADE)
+                               on_delete=models.CASCADE,
+                               related_name='recipe_in_cart')
     
     def __str__(self) -> str:
         return f'{self.user} put {self.recipe} in shopping cart'
