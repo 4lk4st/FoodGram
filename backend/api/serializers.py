@@ -4,7 +4,7 @@ from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
 
 from users.models import FoodUser, Subscription
-from recipes.models import Tag, Ingredient, Recipe, IngredientRecipe, FavoriteRecipe
+from recipes.models import Tag, Ingredient, Recipe, IngredientRecipe, FavoriteRecipe, ShoppingCartRecipes
 
 
 class Base64ImageField(serializers.ImageField):
@@ -149,13 +149,15 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     tags = TagSerializer(read_only=True, many=True)
     ingredients = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
 
     author = FoodUserSerializer(default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Recipe
         fields = ['id', 'tags', 'author', 'ingredients',
-                  'is_favorited', 'name', 'image', 'text', 'cooking_time']
+                  'is_favorited', 'is_in_shopping_cart', 'name', 'image', 'text',
+                  'cooking_time']
         read_only_fields = ('author',)
 
     def get_ingredients(self, obj):
@@ -170,6 +172,12 @@ class RecipeReadSerializer(serializers.ModelSerializer):
             recipe=obj 
         ).exists()
 
+    def get_is_in_shopping_cart(self, obj):
+        return ShoppingCartRecipes.objects.filter(
+            user = self.context['request'].user,
+            recipe=obj
+        ).exists()
+
 
 class ShortRecipeSerializer(serializers.ModelSerializer):
     
@@ -177,19 +185,6 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
         read_only_fields = ("__all__",)
-
-
-class Base64ImageField(serializers.ImageField):
-    """
-    Поле для добавления картинок рецептов
-    """
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith('data:image'):
-            format, imgstr = data.split(';base64,')  
-            ext = format.split('/')[-1]  
-            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
-        
-        return super().to_internal_value(data)
 
 
 class SubsciptionReadSerializer(serializers.ModelSerializer):

@@ -68,4 +68,16 @@ class FavoriteRecipe(models.Model):
                                on_delete=models.CASCADE)
 
     def __str__(self) -> str:
-        return f'{self.user} {self.recipe}'
+        return f'{self.user} prefers {self.recipe}'
+
+
+class ShoppingCartRecipes(models.Model):
+    user = models.ForeignKey(FoodUser,
+                             on_delete=models.CASCADE,
+                             related_name='shopping_cart')
+    
+    recipe = models.ForeignKey(Recipe,
+                               on_delete=models.CASCADE)
+    
+    def __str__(self) -> str:
+        return f'{self.user} put {self.recipe} in shopping cart'

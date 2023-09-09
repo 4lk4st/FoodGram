@@ -1,5 +1,6 @@
 from django.contrib import admin
-from recipes.models import Tag, Ingredient, Recipe, IngredientRecipe, FavoriteRecipe
+from recipes.models import (Tag, Ingredient, Recipe, IngredientRecipe,
+                            FavoriteRecipe, ShoppingCartRecipes)
 from users.models import FoodUser, Subscription
 
 
@@ -10,6 +11,11 @@ class IngredientRecipeInline(admin.TabularInline):
 
 class FavoriteRecipe(admin.TabularInline):
     model = FavoriteRecipe
+    extra = 1
+
+
+class ShoppingCartRecipes(admin.TabularInline):
+    model = ShoppingCartRecipes
     extra = 1
 
 
@@ -26,7 +32,7 @@ class RecipeAdmin(admin.ModelAdmin):
 
 @admin.register(FoodUser)
 class RecipeAdmin(admin.ModelAdmin):
-    inlines = (FavoriteRecipe, Subscription)
+    inlines = (FavoriteRecipe, Subscription, ShoppingCartRecipes)
 
 
 admin.site.register(Tag)

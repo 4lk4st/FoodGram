@@ -8,10 +8,12 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
 from users.models import FoodUser, Subscription
-from recipes.models import Tag, Ingredient, Recipe, FavoriteRecipe
+from recipes.models import Tag, Ingredient, Recipe, FavoriteRecipe, ShoppingCartRecipes
 from api.paginators import FoodPageLimitPaginator
 
-from .serializers import TagSerializer, IngredientSerializer, RecipeReadSerializer, RecipeWriteSerializer, ShortRecipeSerializer, SubsciptionReadSerializer, SubsciptionWriteSerializer
+from .serializers import (TagSerializer, IngredientSerializer, RecipeReadSerializer,
+                          RecipeWriteSerializer, ShortRecipeSerializer, SubsciptionReadSerializer,
+                          SubsciptionWriteSerializer)
 
 
 class TokenCreateView(utils.ActionViewMixin, generics.GenericAPIView):
@@ -51,8 +53,7 @@ class FoodUserView(UserViewSet):
             )
             return Response(
                 SubsciptionReadSerializer(subscription).data,
-                status=status.HTTP_201_CREATED
-            )
+                status=status.HTTP_201_CREATED)
         
         if request.method == 'DELETE':
             Subscription.objects.get(
@@ -125,8 +126,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 recipe = recipe
             )
             return Response(ShortRecipeSerializer(recipe).data,
-                            status=status.HTTP_201_CREATED, 
-                            )
+                            status=status.HTTP_201_CREATED)
         
         if request.method == 'DELETE':
             FavoriteRecipe.objects.get(
@@ -134,4 +134,24 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 recipe = recipe
             ).delete()
             return Response({'detail': 'Рецепт успешно удален из избранного'},
+                            status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['post', 'delete'])
+    def shopping_cart(self, request, **kwargs):
+        recipe = get_object_or_404(Recipe, id=kwargs['pk'])
+
+        if request.method == 'POST':
+            ShoppingCartRecipes.objects.create(
+                user=request.user,
+                recipe=recipe
+            )
+            return Response(ShortRecipeSerializer(recipe).data,
+                            status=status.HTTP_201_CREATED)
+        
+        if request.method == 'DELETE':
+            ShoppingCartRecipes.objects.get(
+                user = request.user,
+                recipe = recipe
+            ).delete()
+            return Response({'detail': 'Рецепт успешно удален из списка покупок'},
                             status=status.HTTP_204_NO_CONTENT)
