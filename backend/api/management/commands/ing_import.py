@@ -13,7 +13,6 @@ DATAFOLDER = os.getcwd()
 class Command(BaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> str | None:
-        print(DATAFOLDER)
         self.import_ingredients()
         
     def import_ingredients(self):

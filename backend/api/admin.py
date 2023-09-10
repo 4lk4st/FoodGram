@@ -27,13 +27,40 @@ class Subscription(admin.TabularInline):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
+    list_display = (
+        'pk',
+        'name',
+        'author',
+        'in_favorites'
+    )
+    list_filter = ('name', 'author', 'tags')
     inlines = (IngredientRecipeInline,)
+
+    @admin.display(description='Число добавлений в избранное')
+    def in_favorites(self, obj):
+        return obj.recipe_in_favorite.count()
 
 
 @admin.register(FoodUser)
-class RecipeAdmin(admin.ModelAdmin):
+class FoodUserAdmin(admin.ModelAdmin):
+    list_display = (
+        'username',
+        'pk',
+        'email',
+        'first_name',
+        'last_name'
+    )
+    list_filter = ('username', 'email')
     inlines = (FavoriteRecipe, Subscription, ShoppingCartRecipes)
 
 
+@admin.register(Ingredient)
+class IngredientAdmin(admin.ModelAdmin):
+    list_display = (
+        'pk',
+        'name'
+    )
+    list_filter = ('name',)
+
+
 admin.site.register(Tag)
-admin.site.register(Ingredient)

@@ -58,6 +58,12 @@ class Subscription(models.Model):
 
     class Meta:
         ordering = ['-user']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'subscription'],
+                name='unique_subscribe'
+            )
+        ]
 
     def __str__(self):
         return f'{self.user} ->>> {self.subscription}'

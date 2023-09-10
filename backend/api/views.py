@@ -13,8 +13,7 @@ from recipes.models import Tag, Ingredient, Recipe, FavoriteRecipe, ShoppingCart
 from api.paginators import FoodPageLimitPaginator
 
 from .serializers import (TagSerializer, IngredientSerializer, RecipeReadSerializer,
-                          RecipeWriteSerializer, ShortRecipeSerializer, SubsciptionReadSerializer,
-                          SubsciptionWriteSerializer)
+                          RecipeWriteSerializer, ShortRecipeSerializer, SubsciptionReadSerializer)
 
 
 class TokenCreateView(utils.ActionViewMixin, generics.GenericAPIView):
@@ -35,7 +34,8 @@ class TokenCreateView(utils.ActionViewMixin, generics.GenericAPIView):
 
 
 class FoodUserView(UserViewSet):
-       
+    permission_classes = [permissions.AllowAny]
+
     @action(detail=False, methods=['get'])
     def subscriptions(self, request):
         recipes_limit = int(self.request.query_params.get('recipes_limit'))
@@ -113,7 +113,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         tags = self.request.query_params.getlist('tags')
         if tags:
-            queryset = queryset.filter(tags__slug__in=tags)
+            queryset = queryset.filter(tags__slug__in=tags).distinct()
 
         author = self.request.query_params.get('author')
         if author:

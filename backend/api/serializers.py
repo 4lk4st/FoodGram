@@ -1,10 +1,24 @@
+import webcolors
 import base64
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
 
 from users.models import FoodUser, Subscription
 from recipes.models import Tag, Ingredient, Recipe, IngredientRecipe, FavoriteRecipe, ShoppingCartRecipes
+
+
+class Hex2NameColor(serializers.Field):
+    def to_representation(self, value):
+        return value
+
+    def to_internal_value(self, data):
+        try:
+            data = webcolors.hex_to_name(data)
+        except ValueError:
+            raise serializers.ValidationError('Для этого цвета нет имени')
+        return data
 
 
 class Base64ImageField(serializers.ImageField):
@@ -28,8 +42,6 @@ class FoodUserSerializer(serializers.ModelSerializer):
         fields = ('email', 'id', 'username', 'first_name', 'last_name', 'is_subscribed')
 
     def get_is_subscribed(self, obj):
-        print(self.context.get('request').user)
-
         user = self.context.get('request').user
 
         if not user.is_anonymous or not user == obj:
@@ -54,6 +66,8 @@ class TagSerializer(serializers.ModelSerializer):
     """
     Сериализатор для модели Tag.
     """
+    color = Hex2NameColor()
+
     class Meta:
         model = Tag
         fields = ['id', 'name', 'color', 'slug']
@@ -212,11 +226,6 @@ class SubsciptionReadSerializer(serializers.ModelSerializer):
     def get_recipes(self, obj):
         if self.context.get('recipes_limit'):
             recipes = obj.recipes.all()[0:self.context.get('recipes_limit')]
+        else:
+            recipes = obj.recipes.all()
         return ShortRecipeSerializer(recipes, many=True, read_only=True).data
-
-
-class SubsciptionWriteSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Subscription
-        fields = ('user', 'subscription')
