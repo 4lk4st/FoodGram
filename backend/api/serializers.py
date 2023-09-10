@@ -28,11 +28,15 @@ class FoodUserSerializer(serializers.ModelSerializer):
         fields = ('email', 'id', 'username', 'first_name', 'last_name', 'is_subscribed')
 
     def get_is_subscribed(self, obj):
-        if not self.context['request'].user.is_anonymous:
+        print(self.context.get('request').user)
+
+        user = self.context.get('request').user
+
+        if not user.is_anonymous or not user == obj:
             return Subscription.objects.filter(
-                user = self.context['request'].user,
+                user = user.id,
                 subscription = obj
-            ).exists()
+            ).exists()      
         return False
     
 
@@ -107,7 +111,8 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return recipe
     
     def to_representation(self, instance):
-        return RecipeReadSerializer(instance=instance).data
+        return RecipeReadSerializer(instance=instance,
+                                    context=self.context).data
 
 
     def update(self, instance, validated_data):
@@ -168,13 +173,13 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
     def get_is_favorited(self, obj):
         return FavoriteRecipe.objects.filter(
-            user=self.context['request'].user,
+            user=self.context['request'].user.id,
             recipe=obj 
         ).exists()
 
     def get_is_in_shopping_cart(self, obj):
         return ShoppingCartRecipes.objects.filter(
-            user = self.context['request'].user,
+            user = self.context['request'].user.id,
             recipe=obj
         ).exists()
 
@@ -189,7 +194,7 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
 
 class SubsciptionReadSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
-    recipes = ShortRecipeSerializer(many=True, read_only=True)
+    recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -203,6 +208,11 @@ class SubsciptionReadSerializer(serializers.ModelSerializer):
     
     def get_recipes_count(self, obj):
         return obj.recipes.count()
+    
+    def get_recipes(self, obj):
+        if self.context.get('recipes_limit'):
+            recipes = obj.recipes.all()[0:self.context.get('recipes_limit')]
+        return ShortRecipeSerializer(recipes, many=True, read_only=True).data
 
 
 class SubsciptionWriteSerializer(serializers.ModelSerializer):

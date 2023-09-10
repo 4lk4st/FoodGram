@@ -38,9 +38,13 @@ class FoodUserView(UserViewSet):
        
     @action(detail=False, methods=['get'])
     def subscriptions(self, request):
+        recipes_limit = int(self.request.query_params.get('recipes_limit'))
+        
         queryset = self.paginate_queryset(
             FoodUser.objects.filter(subscription__user=self.request.user))
-        serializer = SubsciptionReadSerializer(queryset, many=True)
+        serializer = SubsciptionReadSerializer(queryset,
+                                               context={'recipes_limit': recipes_limit},
+                                               many=True)
         return self.get_paginated_response(serializer.data)
 
     @action(detail=True, methods=['post', 'delete'])
@@ -82,7 +86,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     filter_backends = (filters.SearchFilter, )
-    search_fields = ('name', )
+    search_fields = ('^name', )
     pagination_class = None
 
 
@@ -114,6 +118,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
         author = self.request.query_params.get('author')
         if author:
             queryset = queryset.filter(author=author)
+
+        is_favorited = self.request.query_params.get('is_favorited')
+        if is_favorited:
+            queryset = queryset.filter(recipe_in_favorite__user=self.request.user)
+
+        is_in_shopping_cart = self.request.query_params.get('is_in_shopping_cart')
+        if is_in_shopping_cart:
+            queryset = queryset.filter(recipe_in_cart__user=self.request.user)
 
         return queryset
 

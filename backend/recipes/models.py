@@ -34,7 +34,10 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(Ingredient,
                                          through='IngredientRecipe')
     tags = models.ManyToManyField(Tag)
-    image = models.CharField(max_length=16)
+    image = models.ImageField(
+        upload_to='recipes/images/',
+        null=True,
+        default=None)
     name = models.CharField(max_length=200)
     text = models.TextField()
     cooking_time = models.IntegerField(
@@ -65,7 +68,8 @@ class FavoriteRecipe(models.Model):
                              related_name='favorite_recipes')
 
     recipe = models.ForeignKey(Recipe,
-                               on_delete=models.CASCADE)
+                               on_delete=models.CASCADE,
+                               related_name='recipe_in_favorite')
 
     def __str__(self) -> str:
         return f'{self.user} prefers {self.recipe}'
