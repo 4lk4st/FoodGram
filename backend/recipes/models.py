@@ -6,7 +6,7 @@ from users.models import FoodUser
 
 class Tag(models.Model):
     name = models.CharField(max_length=200)
-    color =  models.CharField(max_length=7)
+    color = models.CharField(max_length=7)
     slug = models.SlugField(max_length=200, unique=True)
 
     class Meta:
@@ -42,8 +42,7 @@ class Recipe(models.Model):
     text = models.TextField()
     cooking_time = models.IntegerField(
          validators=[
-            MinValueValidator(1)
-        ]
+            MinValueValidator(1)]
     )
 
     def __str__(self) -> str:
@@ -51,6 +50,7 @@ class Recipe(models.Model):
 
     class Meta:
         ordering = ['-pk']
+
 
 class IngredientRecipe(models.Model):
     ingredient = models.ForeignKey(Ingredient,
@@ -81,10 +81,10 @@ class ShoppingCartRecipes(models.Model):
     user = models.ForeignKey(FoodUser,
                              on_delete=models.CASCADE,
                              related_name='shopping_cart')
-    
+
     recipe = models.ForeignKey(Recipe,
                                on_delete=models.CASCADE,
                                related_name='recipe_in_cart')
-    
+
     def __str__(self) -> str:
         return f'{self.user} put {self.recipe} in shopping cart'

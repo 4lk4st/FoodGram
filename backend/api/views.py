@@ -9,11 +9,13 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
 from users.models import FoodUser, Subscription
-from recipes.models import Tag, Ingredient, Recipe, FavoriteRecipe, ShoppingCartRecipes, IngredientRecipe
+from recipes.models import (Tag, Ingredient, Recipe, FavoriteRecipe,
+                            ShoppingCartRecipes, IngredientRecipe)
 from api.paginators import FoodPageLimitPaginator
 
-from .serializers import (TagSerializer, IngredientSerializer, RecipeReadSerializer,
-                          RecipeWriteSerializer, ShortRecipeSerializer, SubsciptionReadSerializer)
+from .serializers import (TagSerializer, IngredientSerializer,
+                          RecipeReadSerializer, RecipeWriteSerializer,
+                          ShortRecipeSerializer, SubsciptionReadSerializer)
 
 
 class TokenCreateView(utils.ActionViewMixin, generics.GenericAPIView):
@@ -29,7 +31,8 @@ class TokenCreateView(utils.ActionViewMixin, generics.GenericAPIView):
         token = utils.login_user(self.request, serializer.user)
         token_serializer_class = settings.SERIALIZERS.token
         return Response(
-            data=token_serializer_class(token).data, status=status.HTTP_201_CREATED
+            data=token_serializer_class(token).data,
+            status=status.HTTP_201_CREATED
         )
 
 
@@ -39,31 +42,32 @@ class FoodUserView(UserViewSet):
     @action(detail=False, methods=['get'])
     def subscriptions(self, request):
         recipes_limit = int(self.request.query_params.get('recipes_limit'))
-        
+
         queryset = self.paginate_queryset(
             FoodUser.objects.filter(subscription__user=self.request.user))
-        serializer = SubsciptionReadSerializer(queryset,
-                                               context={'recipes_limit': recipes_limit},
-                                               many=True)
+        serializer = SubsciptionReadSerializer(
+            queryset,
+            context={'recipes_limit': recipes_limit},
+            many=True)
         return self.get_paginated_response(serializer.data)
 
     @action(detail=True, methods=['post', 'delete'])
     def subscribe(self, request, **kwargs):
         subscription = get_object_or_404(FoodUser, id=kwargs['id'])
-        
-        if request.method == 'POST':       
+
+        if request.method == 'POST':
             Subscription.objects.create(
-                user = request.user,
-                subscription = subscription
+                user=request.user,
+                subscription=subscription
             )
             return Response(
                 SubsciptionReadSerializer(subscription).data,
                 status=status.HTTP_201_CREATED)
-        
+
         if request.method == 'DELETE':
             Subscription.objects.get(
-                user = request.user,
-                subscription = subscription
+                user=request.user,
+                subscription=subscription
             ).delete()
             return Response({'detail': 'Успешная отписка'},
                             status=status.HTTP_204_NO_CONTENT)
@@ -100,12 +104,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         author = get_object_or_404(FoodUser, id=self.request.user.id)
         serializer.save(author=author)
-    
+
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
             return RecipeReadSerializer
         return RecipeWriteSerializer
-    
+
     def get_queryset(self):
         queryset = Recipe.objects.prefetch_related(
             'recipe_ingredient__ingredient', 'tags'
@@ -121,11 +125,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         is_favorited = self.request.query_params.get('is_favorited')
         if is_favorited:
-            queryset = queryset.filter(recipe_in_favorite__user=self.request.user)
+            queryset = queryset.filter(
+                recipe_in_favorite__user=self.request.user)
 
-        is_in_shopping_cart = self.request.query_params.get('is_in_shopping_cart')
+        is_in_shopping_cart = self.request.query_params.get(
+            'is_in_shopping_cart')
         if is_in_shopping_cart:
-            queryset = queryset.filter(recipe_in_cart__user=self.request.user)
+            queryset = queryset.filter(
+                recipe_in_cart__user=self.request.user)
 
         return queryset
 
@@ -135,16 +142,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         if request.method == 'POST':
             FavoriteRecipe.objects.create(
-                user = request.user,
-                recipe = recipe
+                user=request.user,
+                recipe=recipe
             )
             return Response(ShortRecipeSerializer(recipe).data,
                             status=status.HTTP_201_CREATED)
-        
+
         if request.method == 'DELETE':
             FavoriteRecipe.objects.get(
-                user = request.user,
-                recipe = recipe
+                user=request.user,
+                recipe=recipe
             ).delete()
             return Response({'detail': 'Рецепт успешно удален из избранного'},
                             status=status.HTTP_204_NO_CONTENT)
@@ -160,30 +167,32 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
             return Response(ShortRecipeSerializer(recipe).data,
                             status=status.HTTP_201_CREATED)
-        
+
         if request.method == 'DELETE':
             ShoppingCartRecipes.objects.get(
-                user = request.user,
-                recipe = recipe
+                user=request.user,
+                recipe=recipe
             ).delete()
-            return Response({'detail': 'Рецепт успешно удален из списка покупок'},
-                            status=status.HTTP_204_NO_CONTENT)
+            return Response(
+                {'detail': 'Рецепт успешно удален из списка покупок'},
+                status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['get'])
     def download_shopping_cart(self, request):
         shopping_list = ['Ваш список покупок:', '\n-------------------']
 
         for obj in (IngredientRecipe.objects.filter(
-            recipe__recipe_in_cart__user = request.user)
+            recipe__recipe_in_cart__user=request.user)
             .values('ingredient').annotate(Sum('amount'))
             .values_list('ingredient__name',
                          'ingredient__measurement_unit',
                          'amount__sum')):
             shopping_list.append(f'\n{obj[0]} ({obj[1]}) - {obj[2]}')
         shopping_list.append('\n-------------------\nПриятных покупок!')
-        
+
         return HttpResponse(
             shopping_list,
-            headers={"Content-Type": "text/plain",
-                     "Content-Disposition": 'attachment; filename="shopping_list.txt"'}
+            headers={
+                "Content-Type": "text/plain",
+                "Content-Disposition": 'attachment; filename="sh_list.txt"'}
         )

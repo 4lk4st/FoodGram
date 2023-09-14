@@ -1,11 +1,10 @@
 import json
-from django.urls import reverse
 from django.contrib.auth.hashers import check_password
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 
-from recipes.models import Tag, Ingredient, Recipe
+from recipes.models import Tag, Ingredient
 from users.models import FoodUser
 
 
@@ -26,10 +25,14 @@ class AccountCreationTests(APITestCase):
         """
         FoodUser.objects.create_user(**self.user_info)
         self.assertEqual(FoodUser.objects.count(), 1)
-        self.assertEqual(FoodUser.objects.get().email, self.user_info['email'])
-        self.assertEqual(FoodUser.objects.get().username, self.user_info['username'])
-        self.assertEqual(FoodUser.objects.get().first_name, self.user_info['first_name'])
-        self.assertEqual(FoodUser.objects.get().last_name, self.user_info['last_name'])
+        self.assertEqual(FoodUser.objects.get().email,
+                         self.user_info['email'])
+        self.assertEqual(FoodUser.objects.get().username,
+                         self.user_info['username'])
+        self.assertEqual(FoodUser.objects.get().first_name,
+                         self.user_info['first_name'])
+        self.assertEqual(FoodUser.objects.get().last_name,
+                         self.user_info['last_name'])
 
     def test_create_account(self):
         """
@@ -40,10 +43,14 @@ class AccountCreationTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(FoodUser.objects.count(), 1)
-        self.assertEqual(FoodUser.objects.get().email, self.user_info['email'])
-        self.assertEqual(FoodUser.objects.get().username, self.user_info['username'])
-        self.assertEqual(FoodUser.objects.get().first_name, self.user_info['first_name'])
-        self.assertEqual(FoodUser.objects.get().last_name, self.user_info['last_name'])
+        self.assertEqual(FoodUser.objects.get().email,
+                         self.user_info['email'])
+        self.assertEqual(FoodUser.objects.get().username,
+                         self.user_info['username'])
+        self.assertEqual(FoodUser.objects.get().first_name,
+                         self.user_info['first_name'])
+        self.assertEqual(FoodUser.objects.get().last_name,
+                         self.user_info['last_name'])
 
 
 class AccountEndpointTests(APITestCase):
@@ -58,7 +65,8 @@ class AccountEndpointTests(APITestCase):
         }
 
         url = 'http://127.0.0.1:8000/api/users/'
-        self.new_user = self.client.post(url, self.user_info, format='json')
+        self.new_user = self.client.post(url,
+                                         self.user_info, format='json')
 
     def test_user_profile_by_id(self):
         """
@@ -69,13 +77,18 @@ class AccountEndpointTests(APITestCase):
 
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(json.loads(response.content)["email"], json.loads(self.new_user.content)["email"])
-        self.assertEqual(json.loads(response.content)["id"], json.loads(self.new_user.content)["id"])
-        self.assertEqual(json.loads(response.content)["username"], json.loads(self.new_user.content)["username"])
-        self.assertEqual(json.loads(response.content)["first_name"], json.loads(self.new_user.content)["first_name"])
-        self.assertEqual(json.loads(response.content)["last_name"], json.loads(self.new_user.content)["last_name"])
+        self.assertEqual(json.loads(response.content)["email"],
+                         json.loads(self.new_user.content)["email"])
+        self.assertEqual(json.loads(response.content)["id"],
+                         json.loads(self.new_user.content)["id"])
+        self.assertEqual(json.loads(response.content)["username"],
+                         json.loads(self.new_user.content)["username"])
+        self.assertEqual(json.loads(response.content)["first_name"],
+                         json.loads(self.new_user.content)["first_name"])
+        self.assertEqual(json.loads(response.content)["last_name"],
+                         json.loads(self.new_user.content)["last_name"])
         self.assertNotIn("password", json.loads(response.content))
-    
+
     def test_user_own_profile(self):
         """
         Проверяем доступность профиля текущего пользователя
@@ -88,24 +101,29 @@ class AccountEndpointTests(APITestCase):
                          data, format='json')
         token = Token.objects.get(user__username=self.user_info['username'])
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
-        
+
         url = 'http://127.0.0.1:8000/api/users/me/'
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(json.loads(response.content)["email"], json.loads(self.new_user.content)["email"])
-        self.assertEqual(json.loads(response.content)["id"], json.loads(self.new_user.content)["id"])
-        self.assertEqual(json.loads(response.content)["username"], json.loads(self.new_user.content)["username"])
-        self.assertEqual(json.loads(response.content)["first_name"], json.loads(self.new_user.content)["first_name"])
-        self.assertEqual(json.loads(response.content)["last_name"], json.loads(self.new_user.content)["last_name"])
+        self.assertEqual(json.loads(response.content)["email"],
+                         json.loads(self.new_user.content)["email"])
+        self.assertEqual(json.loads(response.content)["id"],
+                         json.loads(self.new_user.content)["id"])
+        self.assertEqual(json.loads(response.content)["username"],
+                         json.loads(self.new_user.content)["username"])
+        self.assertEqual(json.loads(response.content)["first_name"],
+                         json.loads(self.new_user.content)["first_name"])
+        self.assertEqual(json.loads(response.content)["last_name"],
+                         json.loads(self.new_user.content)["last_name"])
         self.assertNotIn("password", json.loads(response.content))
 
     def test_user_reset_password(self):
         """
         Проверяем возможность смены пароля через api
         """
-        new_user = self.client.post('http://127.0.0.1:8000/api/users/',
-                                    self.user_info, format='json')
-        
+        self.client.post('http://127.0.0.1:8000/api/users/',
+                         self.user_info, format='json')
+
         data = {
             "password": self.user_info['password'],
             "email": self.user_info['email']
@@ -119,11 +137,12 @@ class AccountEndpointTests(APITestCase):
             "new_password": "new_test_password",
             "current_password": self.user_info['password']
         }
-        
+
         url = 'http://127.0.0.1:8000/api/users/set_password/'
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertTrue(check_password(data['new_password'], FoodUser.objects.get().password))
+        self.assertTrue(check_password(data['new_password'],
+                                       FoodUser.objects.get().password))
 
 
 class AuthEndpointTests(APITestCase):
@@ -139,11 +158,11 @@ class AuthEndpointTests(APITestCase):
 
         url = 'http://127.0.0.1:8000/api/users/'
         self.new_user = self.client.post(url, self.user_info, format='json')
-    
+
     def test_get_token(self):
         """
         Проверяем возможность получения токена авторизации
-        """       
+        """
         data = {
             "password": self.user_info['password'],
             "email": self.user_info['email']
@@ -153,7 +172,7 @@ class AuthEndpointTests(APITestCase):
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIsNotNone(json.loads(response.content)["auth_token"])
-    
+
     def test_delete_token(self):
         """
         Проверяем возможность удаления токена авторизации
@@ -164,10 +183,10 @@ class AuthEndpointTests(APITestCase):
         }
         self.client.post('http://127.0.0.1:8000/api/auth/token/login/',
                          data, format='json')
-        
+
         token = Token.objects.get(user__username=self.user_info['username'])
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
- 
+
         url = 'http://127.0.0.1:8000/api/auth/token/logout/'
         response = self.client.post(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -202,9 +221,12 @@ class TagsTests(APITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(json.loads(response.content)[0]['id'], 1)
-        self.assertEqual(json.loads(response.content)[0]['name'], self.tag_info['name'])
-        self.assertEqual(json.loads(response.content)[0]['color'], self.tag_info['color'])
-        self.assertEqual(json.loads(response.content)[0]['slug'], self.tag_info['slug'])
+        self.assertEqual(json.loads(response.content)[0]['name'],
+                         self.tag_info['name'])
+        self.assertEqual(json.loads(response.content)[0]['color'],
+                         self.tag_info['color'])
+        self.assertEqual(json.loads(response.content)[0]['slug'],
+                         self.tag_info['slug'])
 
     def test_tag_by_id(self):
         """
@@ -214,9 +236,12 @@ class TagsTests(APITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(json.loads(response.content)['id'], 1)
-        self.assertEqual(json.loads(response.content)['name'], self.tag_info['name'])
-        self.assertEqual(json.loads(response.content)['color'], self.tag_info['color'])
-        self.assertEqual(json.loads(response.content)['slug'], self.tag_info['slug'])
+        self.assertEqual(json.loads(response.content)['name'],
+                         self.tag_info['name'])
+        self.assertEqual(json.loads(response.content)['color'],
+                         self.tag_info['color'])
+        self.assertEqual(json.loads(response.content)['slug'],
+                         self.tag_info['slug'])
 
 
 class IngrediendsTests(APITestCase):
@@ -233,8 +258,10 @@ class IngrediendsTests(APITestCase):
         Проверяем что тестовый ингредиент создался в базе
         """
         self.assertEqual(Ingredient.objects.count(), 1)
-        self.assertEqual(Ingredient.objects.get().name, self.ingrediend_info['name'])
-        self.assertEqual(Ingredient.objects.get().measurement_unit, self.ingrediend_info['measurement_unit'])
+        self.assertEqual(Ingredient.objects.get().name,
+                         self.ingrediend_info['name'])
+        self.assertEqual(Ingredient.objects.get().measurement_unit,
+                         self.ingrediend_info['measurement_unit'])
 
     def test_ingredient_list(self):
         """
@@ -245,8 +272,10 @@ class IngrediendsTests(APITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(json.loads(response.content)[0]['id'], 1)
-        self.assertEqual(json.loads(response.content)[0]['name'], self.ingrediend_info['name'])
-        self.assertEqual(json.loads(response.content)[0]['measurement_unit'], self.ingrediend_info['measurement_unit'])
+        self.assertEqual(json.loads(response.content)[0]['name'],
+                         self.ingrediend_info['name'])
+        self.assertEqual(json.loads(response.content)[0]['measurement_unit'],
+                         self.ingrediend_info['measurement_unit'])
 
     def test_query_in_ingredient_list(self):
         """
@@ -257,11 +286,13 @@ class IngrediendsTests(APITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(json.loads(response.content)[0]['id'], 1)
-        self.assertEqual(json.loads(response.content)[0]['name'], self.ingrediend_info['name'])
-        self.assertEqual(json.loads(response.content)[0]['measurement_unit'], self.ingrediend_info['measurement_unit'])
+        self.assertEqual(json.loads(response.content)[0]['name'],
+                         self.ingrediend_info['name'])
+        self.assertEqual(json.loads(response.content)[0]['measurement_unit'],
+                         self.ingrediend_info['measurement_unit'])
 
         url = 'http://127.0.0.1:8000/api/ingredients/?search=fake'
-        
+
         response = self.client.get(url, format='json')
         json.loads(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -269,11 +300,13 @@ class IngrediendsTests(APITestCase):
 
     def test_ingredient_by_id(self):
         """
-        Проверяем работоспособность получения ингредиента по id        
+        Проверяем работоспособность получения ингредиента по id
         """
         url = 'http://127.0.0.1:8000/api/ingredients/1/'
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(json.loads(response.content)['id'], 1)
-        self.assertEqual(json.loads(response.content)['name'], self.ingrediend_info['name'])
-        self.assertEqual(json.loads(response.content)['measurement_unit'], self.ingrediend_info['measurement_unit'])
+        self.assertEqual(json.loads(response.content)['name'],
+                         self.ingrediend_info['name'])
+        self.assertEqual(json.loads(response.content)['measurement_unit'],
+                         self.ingrediend_info['measurement_unit'])

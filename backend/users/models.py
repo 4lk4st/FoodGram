@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 from .managers import FoodUserManager
 
+
 class FoodUser(AbstractUser):
     email = models.EmailField(
         verbose_name='email address',
@@ -42,7 +43,7 @@ class FoodUser(AbstractUser):
 
     def __str__(self):
         return self.email
-    
+
 
 class Subscription(models.Model):
     user = models.ForeignKey(

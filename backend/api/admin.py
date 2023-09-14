@@ -58,7 +58,8 @@ class FoodUserAdmin(admin.ModelAdmin):
 class IngredientAdmin(admin.ModelAdmin):
     list_display = (
         'pk',
-        'name'
+        'name',
+        'measurement_unit'
     )
     list_filter = ('name',)
 
