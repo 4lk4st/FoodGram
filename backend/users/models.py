@@ -22,7 +22,7 @@ class FoodUser(AbstractUser):
                                         'This value may contain '
                                         'only letters, numbers '
                                         'and @/./+/-/_ characters.'),
-                                      'invalid'),],
+                                      'invalid'), ],
     )
     first_name = models.CharField(
         max_length=150,

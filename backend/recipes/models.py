@@ -41,9 +41,7 @@ class Recipe(models.Model):
     name = models.CharField(max_length=200)
     text = models.TextField()
     cooking_time = models.IntegerField(
-         validators=[
-            MinValueValidator(1)]
-    )
+         validators=[MinValueValidator(1)])
 
     def __str__(self) -> str:
         return self.name
