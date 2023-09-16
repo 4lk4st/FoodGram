@@ -2,6 +2,7 @@ import webcolors
 import base64
 from rest_framework import serializers
 from django.core.files.base import ContentFile
+from django.shortcuts import get_object_or_404
 
 from users.models import FoodUser, Subscription
 from recipes.models import (Tag, Ingredient, Recipe,
@@ -115,15 +116,21 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                   'name', 'image', 'text', 'cooking_time']
         read_only_fields = ('author',)
 
+    def ing_recipe_create(self, ing_amount, recipe):
+        IngredientRecipe.objects.bulk_create(
+            [IngredientRecipe(
+                ingredient=get_object_or_404(Ingredient, pk=ing['ingredient'].id),
+                recipe=recipe,
+                amount=ing['amount'])
+            for ing in ing_amount]
+        )
+
     def create(self, validated_data):
         ing_amount = validated_data.pop('ingredients')
         recipe = super().create(validated_data)
 
-        for ing in ing_amount:
-            IngredientRecipe.objects.create(
-                ingredient=Ingredient.objects.get(pk=ing['ingredient'].id),
-                recipe=recipe,
-                amount=ing['amount'])
+        self.ing_recipe_create(ing_amount, recipe)
+
         return recipe
 
     def to_representation(self, instance):
@@ -131,32 +138,13 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                                     context=self.context).data
 
     def update(self, instance, validated_data):
-        instance.name = validated_data.get('name', instance.name)
-        instance.image = validated_data.get('image', instance.image)
-        instance.text = validated_data.get('text', instance.text)
-        instance.cooking_time = validated_data.get('cooking_time',
-                                                   instance.cooking_time)
-
-        if 'tags' in validated_data:
-            tags_data = validated_data.pop('tags')
-            instance.tags.set([])
-
-            lst = []
-            for tag in tags_data:
-                lst.append(tag)
-            instance.tags.set(lst)
-
         if 'ingredients' in validated_data:
             ing_amount = validated_data.pop('ingredients')
             instance.ingredients.set([])
+            self.ing_recipe_create(ing_amount, instance)
 
-            for ing in ing_amount:
-                IngredientRecipe.objects.create(
-                    ingredient=Ingredient.objects.get(pk=ing['ingredient'].id),
-                    recipe=instance,
-                    amount=ing['amount'])
+        super().update(instance, validated_data)
 
-        instance.save()
         return instance
 
 
