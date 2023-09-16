@@ -3,7 +3,9 @@ from djoser.conf import settings
 from djoser.views import UserViewSet
 from django.http import HttpResponse
 from django.db.models import Sum
-from rest_framework import generics, status, viewsets, permissions, filters
+from rest_framework import (generics, status, viewsets,
+                            permissions, filters)
+from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
@@ -136,47 +138,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         return queryset
 
-    @action(detail=True, methods=['post', 'delete'])
-    def favorite(self, request, **kwargs):
-        recipe = get_object_or_404(Recipe, id=kwargs['pk'])
-
-        if request.method == 'POST':
-            FavoriteRecipe.objects.create(
-                user=request.user,
-                recipe=recipe
-            )
-            return Response(ShortRecipeSerializer(recipe).data,
-                            status=status.HTTP_201_CREATED)
-
-        if request.method == 'DELETE':
-            FavoriteRecipe.objects.get(
-                user=request.user,
-                recipe=recipe
-            ).delete()
-            return Response({'detail': 'Рецепт успешно удален из избранного'},
-                            status=status.HTTP_204_NO_CONTENT)
-
-    @action(detail=True, methods=['post', 'delete'])
-    def shopping_cart(self, request, **kwargs):
-        recipe = get_object_or_404(Recipe, id=kwargs['pk'])
-
-        if request.method == 'POST':
-            ShoppingCartRecipes.objects.create(
-                user=request.user,
-                recipe=recipe
-            )
-            return Response(ShortRecipeSerializer(recipe).data,
-                            status=status.HTTP_201_CREATED)
-
-        if request.method == 'DELETE':
-            ShoppingCartRecipes.objects.get(
-                user=request.user,
-                recipe=recipe
-            ).delete()
-            return Response(
-                {'detail': 'Рецепт успешно удален из списка покупок'},
-                status=status.HTTP_204_NO_CONTENT)
-
     @action(detail=False, methods=['get'])
     def download_shopping_cart(self, request):
         shopping_list = ['Ваш список покупок:', '\n-------------------']
@@ -196,3 +157,52 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 "Content-Type": "text/plain",
                 "Content-Disposition": 'attachment; filename="sh_list.txt"'}
         )
+
+
+class FavoriteViewSet(APIView):
+    """
+    API эндпоинт для post и del запросов по избранным рецептам.
+    """
+    queryset = Recipe.objects.all()
+
+    def delete(self, request, **kwargs):
+        recipe = get_object_or_404(Recipe, id=kwargs['id'])
+        FavoriteRecipe.objects.get(
+            user=request.user,
+            recipe=recipe
+        ).delete()
+        return Response({'detail': 'Рецепт успешно удален из избранного'},
+                        status=status.HTTP_204_NO_CONTENT)
+
+    def post(self, request, **kwargs):
+        recipe = get_object_or_404(Recipe, id=kwargs['id'])
+        FavoriteRecipe.objects.create(
+            user=request.user,
+            recipe=recipe
+        )
+        return Response(ShortRecipeSerializer(recipe).data,
+                        status=status.HTTP_201_CREATED)
+
+
+class ShoppingCartViewSet(APIView):
+    """
+    API эндпоинт для post и del запросов по списку покупок.
+    """
+    def delete(self, request, **kwargs):
+        recipe = get_object_or_404(Recipe, id=kwargs['id'])
+        ShoppingCartRecipes.objects.get(
+            user=request.user,
+            recipe=recipe
+        ).delete()
+        return Response(
+            {'detail': 'Рецепт успешно удален из списка покупок'},
+            status=status.HTTP_204_NO_CONTENT)
+
+    def post(self, request, **kwargs):
+        recipe = get_object_or_404(Recipe, id=kwargs['id'])
+        ShoppingCartRecipes.objects.create(
+            user=request.user,
+            recipe=recipe
+        )
+        return Response(ShortRecipeSerializer(recipe).data,
+                        status=status.HTTP_201_CREATED)

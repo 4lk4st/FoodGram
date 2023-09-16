@@ -165,3 +165,9 @@ DJOSER = {
         'user_list': ['rest_framework.permissions.AllowAny'],
     }
 }
+
+# Project settings
+EMAIL_LENGTH = 254
+NAME_LENGTH = 150
+CHARFIELD_LENGTH = 200
+COLOR_LENGHT = 50

@@ -2,12 +2,13 @@ from django.db import models
 from django.core.validators import MinValueValidator
 
 from users.models import FoodUser
+from backend.settings import CHARFIELD_LENGTH, COLOR_LENGHT
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=200)
-    color = models.CharField(max_length=7)
-    slug = models.SlugField(max_length=200, unique=True)
+    name = models.CharField(max_length=CHARFIELD_LENGTH)
+    color = models.CharField(max_length=COLOR_LENGHT)
+    slug = models.SlugField(max_length=CHARFIELD_LENGTH, unique=True)
 
     class Meta:
         ordering = ['name']
@@ -17,8 +18,8 @@ class Tag(models.Model):
 
 
 class Ingredient(models.Model):
-    name = models.CharField(max_length=200)
-    measurement_unit = models.CharField(max_length=200)
+    name = models.CharField(max_length=CHARFIELD_LENGTH)
+    measurement_unit = models.CharField(max_length=CHARFIELD_LENGTH)
 
     class Meta:
         ordering = ['name']
@@ -38,7 +39,7 @@ class Recipe(models.Model):
         upload_to='recipes/images/',
         null=True,
         default=None)
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=CHARFIELD_LENGTH)
     text = models.TextField()
     cooking_time = models.IntegerField(
         validators=[MinValueValidator(1)])

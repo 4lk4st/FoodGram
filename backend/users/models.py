@@ -3,6 +3,7 @@ from django.db import models
 from django.core import validators
 from django.utils.translation import gettext_lazy as _
 
+from backend.settings import EMAIL_LENGTH, NAME_LENGTH
 from .managers import FoodUserManager
 
 
@@ -10,7 +11,7 @@ class FoodUser(AbstractUser):
     email = models.EmailField(
         verbose_name='email address',
         unique=True,
-        max_length=254,
+        max_length=EMAIL_LENGTH,
     )
     username = models.CharField(
         unique=True,
@@ -25,11 +26,11 @@ class FoodUser(AbstractUser):
                                       'invalid'), ],
     )
     first_name = models.CharField(
-        max_length=150,
+        max_length=NAME_LENGTH,
         verbose_name='first name'
     )
     last_name = models.CharField(
-        max_length=150,
+        max_length=NAME_LENGTH,
         verbose_name='last name'
     )
 

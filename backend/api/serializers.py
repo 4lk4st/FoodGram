@@ -119,10 +119,11 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     def ing_recipe_create(self, ing_amount, recipe):
         IngredientRecipe.objects.bulk_create(
             [IngredientRecipe(
-                ingredient=get_object_or_404(Ingredient, pk=ing['ingredient'].id),
+                ingredient=get_object_or_404(Ingredient,
+                                             pk=ing['ingredient'].id),
                 recipe=recipe,
                 amount=ing['amount'])
-            for ing in ing_amount]
+                for ing in ing_amount]
         )
 
     def create(self, validated_data):
@@ -140,7 +141,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         if 'ingredients' in validated_data:
             ing_amount = validated_data.pop('ingredients')
-            instance.ingredients.set([])
+            instance.ingredients.clear()
             self.ing_recipe_create(ing_amount, instance)
 
         super().update(instance, validated_data)
