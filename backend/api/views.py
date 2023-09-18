@@ -138,26 +138,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         return queryset
 
-    @action(detail=False, methods=['get'])
-    def download_shopping_cart(self, request):
-        shopping_list = ['Ваш список покупок:', '\n-------------------']
-
-        for obj in (IngredientRecipe.objects.filter(
-            recipe__recipe_in_cart__user=request.user)
-            .values('ingredient').annotate(Sum('amount'))
-            .values_list('ingredient__name',
-                         'ingredient__measurement_unit',
-                         'amount__sum')):
-            shopping_list.append(f'\n{obj[0]} ({obj[1]}) - {obj[2]}')
-        shopping_list.append('\n-------------------\nПриятных покупок!')
-
-        return HttpResponse(
-            shopping_list,
-            headers={
-                "Content-Type": "text/plain",
-                "Content-Disposition": 'attachment; filename="sh_list.txt"'}
-        )
-
 
 class FavoriteViewSet(APIView):
     """
@@ -186,7 +166,7 @@ class FavoriteViewSet(APIView):
 
 class ShoppingCartViewSet(APIView):
     """
-    API эндпоинт для post и del запросов по списку покупок.
+    API эндпоинт для get, post и del запросов по списку покупок.
     """
     def delete(self, request, **kwargs):
         recipe = get_object_or_404(Recipe, id=kwargs['id'])
@@ -206,3 +186,22 @@ class ShoppingCartViewSet(APIView):
         )
         return Response(ShortRecipeSerializer(recipe).data,
                         status=status.HTTP_201_CREATED)
+
+    def get(self, request):
+        shopping_list = ['Ваш список покупок:', '\n-------------------']
+
+        for obj in (IngredientRecipe.objects.filter(
+            recipe__recipe_in_cart__user=request.user)
+            .values('ingredient').annotate(Sum('amount'))
+            .values_list('ingredient__name',
+                         'ingredient__measurement_unit',
+                         'amount__sum')):
+            shopping_list.append(f'\n{obj[0]} ({obj[1]}) - {obj[2]}')
+        shopping_list.append('\n-------------------\nПриятных покупок!')
+
+        return HttpResponse(
+            shopping_list,
+            headers={
+                "Content-Type": "text/plain",
+                "Content-Disposition": 'attachment; filename="sh_list.txt"'}
+        )

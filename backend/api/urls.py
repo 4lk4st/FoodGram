@@ -22,5 +22,8 @@ urlpatterns = [
     path('api/recipes/<int:id>/shopping_cart/',
          ShoppingCartViewSet.as_view(),
          name='shopping_cart'),
+    path('api/recipes/download_shopping_cart/',
+         ShoppingCartViewSet.as_view(),
+         name='download'),
     path('', include(router.urls)),
 ]
