@@ -25,13 +25,14 @@ SECRET_KEY = str(os.getenv('SECRET_KEY'))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['backend', 'localhost']
+ALLOWED_HOSTS = ['foodgramforfriends.hopto.org', '84.252.137.95',
+                 '127.0.0.1', 'localhost', 'backend']
 
-CSRF_TRUSTED_ORIGINS = ['https://*.127.0.0.1', 'http://*.127.0.0.1',
+CSRF_TRUSTED_ORIGINS = ['https://*.foodgramforfriends.hopto.org', 'http://*.foodgramforfriends.hopto.org',
+                        'https://*.127.0.0.1', 'http://*.127.0.0.1',
                         'https://*.backend', 'http://*.backend',
                         'https://*.localhost', 'http://*.localhost',
-                        'http://localhost:8000']
-
+                        'http://*.localhost:8000', 'http://*.localhost:8001']
 
 # Application definition
 
