@@ -7,7 +7,8 @@ from django.core.management.base import BaseCommand
 
 from recipes.models import Ingredient
 
-os.chdir('..//data')
+
+os.chdir('//app//data')
 DATAFOLDER = os.getcwd()
 
 
