@@ -1,4 +1,5 @@
-Проект доступен по адресу http://foodgramforfriends.hopto.org/
+
+# Проект доступен по адресу http://foodgramforfriends.hopto.org/
 
 # Технологии, используемые в данном проекте:
 
