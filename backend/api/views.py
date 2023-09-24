@@ -4,7 +4,7 @@ from djoser.views import UserViewSet
 from django.http import HttpResponse
 from django.db.models import Sum
 from rest_framework import (generics, status, viewsets,
-                            permissions, filters)
+                            permissions)
 from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
