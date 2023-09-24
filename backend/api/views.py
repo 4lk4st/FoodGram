@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from django_filters import rest_framework as filters
 
 from users.models import FoodUser, Subscription
 from recipes.models import (Tag, Ingredient, Recipe, FavoriteRecipe,
@@ -18,6 +19,7 @@ from api.paginators import FoodPageLimitPaginator
 from .serializers import (TagSerializer, IngredientSerializer,
                           RecipeReadSerializer, RecipeWriteSerializer,
                           ShortRecipeSerializer, SubsciptionReadSerializer)
+from .filters import IngredientFilter
 
 
 class TokenCreateView(utils.ActionViewMixin, generics.GenericAPIView):
@@ -91,8 +93,8 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    filter_backends = (filters.SearchFilter, )
-    search_fields = ('^name', )
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = IngredientFilter
     pagination_class = None
 
 
