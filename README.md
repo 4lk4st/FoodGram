@@ -2,7 +2,7 @@
 
 - Python 3.11
 - Django 4.2.4
-- Djando Rest Framework 3.14
+- Django Rest Framework 3.14
 - Djoser 2.2.0
 - Docker
 - PostgreSQL
